@@ -160,14 +160,14 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func keyboardChange(notification: NSNotification) {
-        guard let action = action(from: notification.name) else { return }
+        guard action(from: notification.name) != nil else { return }
         
         guard let userInfo = notification.userInfo,
             let frame    = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
                 return
         }
         
-        viewForDone.frame = CGRect(x: frame.origin.x, y: frame.origin.y - viewForDone.frame.size.height, width: viewForDone.frame.size.width, height: viewForDone.frame.size.height)
+        viewForDone.frame = CGRect(x: frame.origin.x, y: frame.origin.y - viewForDone.frame.size.height, width: frame.size.width, height: viewForDone.frame.size.height)
         viewForDone.isHidden = false
     }
 
