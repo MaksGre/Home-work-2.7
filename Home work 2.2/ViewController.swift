@@ -7,17 +7,21 @@
 //
 
 import UIKit
-import Foundation
+
+public enum KeyboardAction {
+    case willChangeFrame
+}
 
 class ViewController: UIViewController, UITextFieldDelegate {
     
     struct ColorForView {
-        var red: CGFloat!
-        var green: CGFloat!
-        var blue: CGFloat!
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
     }
 
     @IBOutlet var viewForPaint: UIView!
+    @IBOutlet var viewForDone: UIView!
     
     @IBOutlet var redLabel: UILabel!
     @IBOutlet var greenLabel: UILabel!
@@ -30,18 +34,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var redTextField: UITextField!
     @IBOutlet var greenTextField: UITextField!
     @IBOutlet var blueTextField: UITextField!
-    
+        
     var colorForView = ColorForView()
-    
-    var notification = NSNotification()
+    let notification = NotificationCenter.default
+    var keyboardFrame = CGRect(x: 0, y: 0, width: 0, height: 0)
+    var sliderMaximum: Float = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-
-//        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow(notification:)), name: NSNotification.Name.keyboardDidShowNotification, object: nil)
-//        NSNotification.Name.
+        notification.addObserver(self,
+                           selector: #selector(keyboardChange),
+                           name: UIResponder.keyboardWillChangeFrameNotification,
+                           object: nil)
         
         viewForPaint.layer.cornerRadius = 10
         
@@ -50,7 +55,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         colorForView.blue = CGFloat(blueSlider.value)
         
         redLabel.text = String(format: "%.2f", redSlider.value)
-
         greenLabel.text = String(format: "%.2f", greenSlider.value)
         blueLabel.text = String(format: "%.2f", blueSlider.value)
         
@@ -59,7 +63,11 @@ class ViewController: UIViewController, UITextFieldDelegate {
         blueTextField.text = blueLabel.text
         
         redTextField.delegate = self
-        
+        greenTextField.delegate = self
+        blueTextField.delegate = self
+
+        sliderMaximum = redSlider.maximumValue
+            
         viewForPaint.backgroundColor = .init(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
     }
 
@@ -92,11 +100,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func textFieldEdit(_ sender: UITextField) {
 
-        guard let string = sender.text, !string.isEmpty else { return }
-        
-        if let _ = Float(string) { } else { return }
-
-        let value = Float(string)!
+        guard let string = sender.text, !string.isEmpty, let value = Float(string) else { return }
 
         var slider: UISlider!
         var label: UILabel!
@@ -123,13 +127,57 @@ class ViewController: UIViewController, UITextFieldDelegate {
         viewForPaint.backgroundColor = .init(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
     }
     
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        
-        print("TextField did begin editing method called")
+    @IBAction func doneEditing() {
+        redTextField.resignFirstResponder()
+        greenTextField.resignFirstResponder()
+        blueTextField.resignFirstResponder()
+        viewForDone.isHidden = true
     }
     
-    @objc func keyboardWillShow(notification: NSNotification) {
-        // set scroll view content size height as per your need (subtract keyboard height from original)
+    func textFieldShouldEndEditing(_ sender: UITextField) -> Bool {
+        
+        var label: UILabel!
+        
+        switch sender {
+        case redTextField: label = redLabel
+        case greenTextField: label = greenLabel
+        case blueTextField: label = blueLabel
+        default: break
+        }
+        
+        guard let string = sender.text, !string.isEmpty, let value = Float(string) else {
+            sender.text = label.text
+            return true
+        }
+        
+        if value > sliderMaximum {
+            sender.text = String(format: "%.2f", sliderMaximum)
+        } else {
+            sender.text = String(format: "%.2f", value)
+        }
+        
+        return true
+    }
+    
+    @objc func keyboardChange(notification: NSNotification) {
+        guard let action = action(from: notification.name) else { return }
+        
+        guard let userInfo = notification.userInfo,
+            let frame    = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
+                return
+        }
+        
+        viewForDone.frame = CGRect(x: frame.origin.x, y: frame.origin.y - viewForDone.frame.size.height, width: viewForDone.frame.size.width, height: viewForDone.frame.size.height)
+        viewForDone.isHidden = false
+    }
+
+    private func action(from notificationName: NSNotification.Name) -> KeyboardAction? {
+        switch notificationName {
+        case UIResponder.keyboardWillChangeFrameNotification:
+            return .willChangeFrame
+        default:
+            return nil
+        }
     }
 }
 
