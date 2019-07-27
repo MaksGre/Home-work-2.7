@@ -12,12 +12,33 @@ public enum KeyboardAction {
     case willChangeFrame
 }
 
-class ViewController: UIViewController, UITextFieldDelegate {
+class ViewController: UIViewController {
     
     struct ColorForView {
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
+        static let defaultValue: Float = 0.5
+        
+        var red: Float
+        var green: Float
+        var blue: Float
+        
+        var redCGFloat: CGFloat {
+            get { return CGFloat(red) }
+            set { red = Float(newValue) }
+        }
+        var greenCGFloat: CGFloat {
+            get { return CGFloat(green) }
+            set { green = Float(newValue) }
+        }
+        var blueCGFloat: CGFloat {
+            get { return CGFloat(blue) }
+            set { blue = Float(newValue) }
+        }
+        
+        init(red: Float = defaultValue, green: Float = defaultValue, blue: Float = defaultValue) {
+            self.red = red
+            self.green = green
+            self.blue = blue
+        }
     }
 
     @IBOutlet var viewForPaint: UIView!
@@ -50,9 +71,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         viewForPaint.layer.cornerRadius = 10
         
-        colorForView.red = CGFloat(redSlider.value)
-        colorForView.green = CGFloat(greenSlider.value)
-        colorForView.blue = CGFloat(blueSlider.value)
+        redSlider.value = colorForView.red
+        greenSlider.value = colorForView.green
+        blueSlider.value = colorForView.blue
         
         redLabel.text = String(format: "%.2f", redSlider.value)
         greenLabel.text = String(format: "%.2f", greenSlider.value)
@@ -68,10 +89,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
 
         sliderMaximum = redSlider.maximumValue
             
-        viewForPaint.backgroundColor = .init(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
+        viewForPaint.backgroundColor = .init(red: colorForView.redCGFloat, green: colorForView.greenCGFloat, blue: colorForView.blueCGFloat, alpha: 1)
     }
 
-    @IBAction func sliderMove(_ sender: UISlider) {
+    @IBAction func didMoveSlider(_ sender: UISlider) {
         
         var label: UILabel!
         var textField: UITextField!
@@ -80,26 +101,25 @@ class ViewController: UIViewController, UITextFieldDelegate {
         case redSlider:
             label = redLabel
             textField = redTextField
-            colorForView.red = CGFloat(sender.value)
+            colorForView.red = sender.value
         case greenSlider:
             label = greenLabel
             textField = greenTextField
-            colorForView.green = CGFloat(sender.value)
+            colorForView.green = sender.value
         case blueSlider:
             label = blueLabel
             textField = blueTextField
-            colorForView.blue = CGFloat(sender.value)
+            colorForView.blue = sender.value
         default:
-            break
+            return
         }
         
         label.text = String(format: "%.2f", sender.value)
         textField.text = label.text
-        viewForPaint.backgroundColor = .init(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
+        viewForPaint.backgroundColor = .init(red: colorForView.redCGFloat, green: colorForView.greenCGFloat, blue: colorForView.blueCGFloat, alpha: 1)
     }
     
-    @IBAction func textFieldEdit(_ sender: UITextField) {
-
+    @IBAction func didEditTextField(_ sender: UITextField) {
         guard let string = sender.text, !string.isEmpty, let value = Float(string) else { return }
 
         var slider: UISlider!
@@ -109,22 +129,22 @@ class ViewController: UIViewController, UITextFieldDelegate {
         case redTextField:
             slider = redSlider
             label = redLabel
-            colorForView.red = CGFloat(value)
+            colorForView.red = value
         case greenTextField:
             slider = greenSlider
             label = greenLabel
-            colorForView.green = CGFloat(value)
+            colorForView.green = value
         case blueTextField:
             slider = blueSlider
             label = blueLabel
-            colorForView.blue = CGFloat(value)
+            colorForView.blue = value
         default:
-            break
+            return
         }
         
         slider.value = value
         label.text = sender.text
-        viewForPaint.backgroundColor = .init(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
+        viewForPaint.backgroundColor = .init(red: colorForView.redCGFloat, green: colorForView.greenCGFloat, blue: colorForView.blueCGFloat, alpha: 1)
     }
     
     @IBAction func doneEditing() {
@@ -134,30 +154,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         viewForDone.isHidden = true
     }
     
-    func textFieldShouldEndEditing(_ sender: UITextField) -> Bool {
-        
-        var label: UILabel!
-        
-        switch sender {
-        case redTextField: label = redLabel
-        case greenTextField: label = greenLabel
-        case blueTextField: label = blueLabel
-        default: break
-        }
-        
-        guard let string = sender.text, !string.isEmpty, let value = Float(string) else {
-            sender.text = label.text
-            return true
-        }
-        
-        if value > sliderMaximum {
-            sender.text = String(format: "%.2f", sliderMaximum)
-        } else {
-            sender.text = String(format: "%.2f", value)
-        }
-        
-        return true
-    }
+    // MARK: - Notification
     
     @objc func keyboardChange(notification: NSNotification) {
         guard action(from: notification.name) != nil else { return }
@@ -178,6 +175,34 @@ class ViewController: UIViewController, UITextFieldDelegate {
         default:
             return nil
         }
+    }
+}
+
+extension ViewController: UITextFieldDelegate {
+    
+    func textFieldShouldEndEditing(_ sender: UITextField) -> Bool {
+        
+        var label: UILabel!
+        
+        switch sender {
+        case redTextField: label = redLabel
+        case greenTextField: label = greenLabel
+        case blueTextField: label = blueLabel
+        default: return true
+        }
+        
+        guard let string = sender.text, !string.isEmpty, let value = Float(string) else {
+            sender.text = label.text
+            return true
+        }
+        
+        if value > sliderMaximum {
+            sender.text = String(format: "%.2f", sliderMaximum)
+        } else {
+            sender.text = String(format: "%.2f", value)
+        }
+        
+        return true
     }
 }
 
