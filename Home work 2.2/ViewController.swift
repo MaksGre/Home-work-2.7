@@ -8,37 +8,17 @@
 
 import UIKit
 
-public enum KeyboardAction {
+enum KeyboardAction {
     case willChangeFrame
 }
 
 class ViewController: UIViewController {
     
     struct ColorForView {
-        static let defaultValue: Float = 0.5
-        
-        var red: Float
-        var green: Float
-        var blue: Float
-        
-        var redCGFloat: CGFloat {
-            get { return CGFloat(red) }
-            set { red = Float(newValue) }
-        }
-        var greenCGFloat: CGFloat {
-            get { return CGFloat(green) }
-            set { green = Float(newValue) }
-        }
-        var blueCGFloat: CGFloat {
-            get { return CGFloat(blue) }
-            set { blue = Float(newValue) }
-        }
-        
-        init(red: Float = defaultValue, green: Float = defaultValue, blue: Float = defaultValue) {
-            self.red = red
-            self.green = green
-            self.blue = blue
-        }
+
+        var red: Float = 0.5
+        var green: Float = 0.5
+        var blue: Float = 0.5
     }
 
     @IBOutlet var viewForPaint: UIView!
@@ -71,9 +51,9 @@ class ViewController: UIViewController {
         
         viewForPaint.layer.cornerRadius = 10
         
-        redSlider.value = colorForView.red
-        greenSlider.value = colorForView.green
-        blueSlider.value = colorForView.blue
+        redSlider.value = Float(colorForView.red)
+        greenSlider.value = Float(colorForView.green)
+        blueSlider.value = Float(colorForView.blue)
         
         redLabel.text = String(format: "%.2f", redSlider.value)
         greenLabel.text = String(format: "%.2f", greenSlider.value)
@@ -87,9 +67,7 @@ class ViewController: UIViewController {
         greenTextField.delegate = self
         blueTextField.delegate = self
 
-        sliderMaximum = redSlider.maximumValue
-            
-        viewForPaint.backgroundColor = .init(red: colorForView.redCGFloat, green: colorForView.greenCGFloat, blue: colorForView.blueCGFloat, alpha: 1)
+        viewForPaint.backgroundColor = UIColor(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
     }
 
     @IBAction func didMoveSlider(_ sender: UISlider) {
@@ -113,10 +91,10 @@ class ViewController: UIViewController {
         default:
             return
         }
-        
+
         label.text = String(format: "%.2f", sender.value)
         textField.text = label.text
-        viewForPaint.backgroundColor = .init(red: colorForView.redCGFloat, green: colorForView.greenCGFloat, blue: colorForView.blueCGFloat, alpha: 1)
+        viewForPaint.backgroundColor = UIColor(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
     }
     
     @IBAction func didEditTextField(_ sender: UITextField) {
@@ -144,7 +122,7 @@ class ViewController: UIViewController {
         
         slider.value = value
         label.text = sender.text
-        viewForPaint.backgroundColor = .init(red: colorForView.redCGFloat, green: colorForView.greenCGFloat, blue: colorForView.blueCGFloat, alpha: 1)
+        viewForPaint.backgroundColor = UIColor(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
     }
     
     @IBAction func doneEditing() {
@@ -181,7 +159,7 @@ class ViewController: UIViewController {
 extension ViewController: UITextFieldDelegate {
     
     func textFieldShouldEndEditing(_ sender: UITextField) -> Bool {
-        
+        //использую textFieldShouldEndEditing для обработки значения до передачи его другим элементам
         var label: UILabel!
         
         switch sender {
@@ -196,7 +174,7 @@ extension ViewController: UITextFieldDelegate {
             return true
         }
         
-        if value > sliderMaximum {
+        if value > redSlider.maximumValue {
             sender.text = String(format: "%.2f", sliderMaximum)
         } else {
             sender.text = String(format: "%.2f", value)
@@ -206,3 +184,11 @@ extension ViewController: UITextFieldDelegate {
     }
 }
 
+extension UIColor {
+    convenience init(red: Float, green: Float, blue: Float, alpha: Float) {
+        self.init(red: CGFloat(red),
+                  green: CGFloat(green),
+                  blue: CGFloat(blue),
+                  alpha: CGFloat(alpha))
+    }
+}
