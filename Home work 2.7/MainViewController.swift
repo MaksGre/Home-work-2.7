@@ -9,17 +9,9 @@
 import UIKit
 
 class MainViewController: UIViewController {
-
-    @IBOutlet var toolbar: UIToolbar!
     
-    static var delegate: MainVCDelegate!
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        MainViewController.delegate = self
 
-    }
+    @IBOutlet var navigationBar: UINavigationBar!
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard segue.identifier == "Segue" else { return }
@@ -34,6 +26,7 @@ class MainViewController: UIViewController {
                                           alpha: &alpha)
 
         let setColorVC = segue.destination as! SetColorViewController
+        setColorVC.delegate = self
         setColorVC.colorForView = ColorForView(red: Float(red),
                                                green: Float(green),
                                                blue: Float(blue))
@@ -45,11 +38,11 @@ class MainViewController: UIViewController {
 
 }
 
-extension MainViewController: MainVCDelegate {
+extension MainViewController: SetColorViewControllerDelegate {
     
-    func setColorForVC(_ color: UIColor) {
+    func didSetColor(_ color: UIColor) {
         self.view.backgroundColor = color
-        toolbar.backgroundColor = color
+        navigationBar.backgroundColor = color
     }
     
 }

@@ -1,5 +1,5 @@
 //
-//  MainVCDelegate.swift
+//  SetColorViewControllerDelegate.swift
 //  Home work 2.7
 //
 //  Created by Maksim Grebenozhko on 13/08/2019.
@@ -8,6 +8,6 @@
 
 import UIKit
 
-protocol MainVCDelegate {
-    func setColorForVC(_ color: UIColor)
+protocol SetColorViewControllerDelegate: AnyObject {
+    func didSetColor(_ color: UIColor)
 }

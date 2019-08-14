@@ -41,7 +41,7 @@ class SetColorViewController: UIViewController {
     var keyboardFrame = CGRect(x: 0, y: 0, width: 0, height: 0)
     var sliderMaximum: Float = 0
     
-    var delegate: MainVCDelegate!
+    weak var delegate: SetColorViewControllerDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -68,9 +68,7 @@ class SetColorViewController: UIViewController {
         redTextField.delegate = self
         greenTextField.delegate = self
         blueTextField.delegate = self
-        
-        delegate = MainViewController.delegate
-        
+                
         viewForPaint.backgroundColor = UIColor(red: colorForView.red, green: colorForView.green, blue: colorForView.blue, alpha: 1)
     }
 
@@ -137,9 +135,10 @@ class SetColorViewController: UIViewController {
     }
     
     @IBAction func backButtonPressed() {
-        if let colorForPaint = viewForPaint.backgroundColor {
-            delegate.setColorForVC(colorForPaint)
-        }
+        guard let colorForPaint = viewForPaint.backgroundColor,
+            let delegate = delegate else { return }
+        
+        delegate.didSetColor(colorForPaint)
     }
     
     // MARK: - Notification
