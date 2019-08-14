@@ -42,7 +42,6 @@ extension MainViewController: SetColorViewControllerDelegate {
     
     func didSetColor(_ color: UIColor) {
         self.view.backgroundColor = color
-        navigationBar.backgroundColor = color
     }
     
 }
